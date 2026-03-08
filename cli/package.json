@@ -1,0 +1,20 @@
+{
+  "name": "@your-name/bonsai-cli",
+  "version": "1.0.0",
+  "description": "🌱 Bonsai CLI — free frontier coding models",
+  "main": "bin/bonsai.js",
+  "bin": {
+    "billing": "./bin/bonsai.js"
+  },
+  "scripts": {
+    "test": "echo OK"
+  },
+  "dependencies": {
+    "commander": "^11.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["ai", "cli", "coding", "claude", "gpt", "frontier"],
+  "license": "MIT"
+}
