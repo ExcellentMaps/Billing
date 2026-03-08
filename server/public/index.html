@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bonsai – Free Frontier Coding Models</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --surface: #111114;
+    --surface2: #18181c;
+    --border: #222228;
+    --border2: #2e2e38;
+    --text: #f0f0f2;
+    --muted: #6b6b78;
+    --accent: #5aff8e;
+    --accent2: #3de070;
+    --accent-dim: rgba(90,255,142,0.12);
+    --accent-glow: rgba(90,255,142,0.25);
+    --red: #ff5a5a;
+    --yellow: #ffd05a;
+    --blue: #5ab4ff;
+    --purple: #b05aff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+  
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ===== VIEWS ===== */
+  .view { display: none; min-height: 100vh; }
+  .view.active { display: flex; }
+
+  /* ===== LANDING ===== */
+  #landing { flex-direction: column; background: var(--bg); position: relative; overflow: hidden; }
+  
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+
+  .glow-orb {
+    position: absolute; border-radius: 50%; filter: blur(120px); pointer-events: none;
+  }
+  .orb1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(90,255,142,0.08), transparent 70%); top: -200px; left: 50%; transform: translateX(-50%); }
+  .orb2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(90,180,255,0.05), transparent 70%); bottom: 100px; right: -100px; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 60px;
+    border-bottom: 1px solid rgba(34,34,40,0.8);
+    background: rgba(10,10,11,0.85);
+    backdrop-filter: blur(20px);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none; }
+  .nav-logo .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .nav-logo .logo-icon svg { width: 18px; height: 18px; }
+  .nav-links { display: flex; align-items: center; gap: 32px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-actions { display: flex; gap: 12px; align-items: center; }
+  
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; text-decoration: none; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 8px 24px var(--accent-glow); }
+  .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  .btn-outline:hover { background: var(--accent-dim); }
+  .btn-danger { background: rgba(255,90,90,0.15); color: var(--red); border: 1px solid rgba(255,90,90,0.3); }
+  .btn-danger:hover { background: rgba(255,90,90,0.25); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+
+  .hero {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 140px 40px 80px; position: relative; z-index: 1;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px;
+    background: var(--accent-dim); border: 1px solid rgba(90,255,142,0.25); border-radius: 100px;
+    font-size: 13px; color: var(--accent); font-weight: 600; margin-bottom: 40px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+  h1 { font-size: clamp(48px, 7vw, 92px); font-weight: 800; line-height: 1.0; letter-spacing: -3px; margin-bottom: 28px; max-width: 900px; }
+  h1 .accent { color: var(--accent); }
+  h1 .dim { color: var(--muted); }
+  .hero-sub { font-size: 18px; color: var(--muted); max-width: 540px; line-height: 1.6; margin-bottom: 48px; font-family: 'JetBrains Mono', monospace; font-weight: 300; }
+  
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  
+  .code-block {
+    margin-top: 80px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden; max-width: 560px; width: 100%; text-align: left;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+  }
+  .code-header { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; } .dot-y { background: #febc2e; } .dot-g { background: #28c840; }
+  .code-title { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+  .code-body { padding: 24px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.8; }
+  .code-line { display: flex; gap: 16px; }
+  .code-comment { color: var(--muted); }
+  .code-cmd { color: var(--accent); }
+  .code-str { color: var(--yellow); }
+  .code-key { color: var(--blue); }
+
+  /* Steps */
+  .steps-section { padding: 100px 60px; position: relative; z-index: 1; }
+  .section-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; }
+  .section-title { font-size: 48px; font-weight: 800; letter-spacing: -2px; margin-bottom: 60px; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .step-card { background: var(--surface); border: 1px solid var(--border); padding: 40px; position: relative; overflow: hidden; }
+  .step-card:first-child { border-radius: 16px 0 0 16px; }
+  .step-card:last-child { border-radius: 0 16px 16px 0; }
+  .step-num { font-size: 80px; font-weight: 800; color: var(--border2); position: absolute; top: -10px; right: 20px; line-height: 1; }
+  .step-icon { width: 48px; height: 48px; background: var(--accent-dim); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .step-icon svg { width: 24px; height: 24px; color: var(--accent); }
+  .step-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+  .step-card p { color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+  /* Models */
+  .models-section { padding: 80px 60px; }
+  .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 40px; }
+  .model-pill {
+    display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    font-size: 14px; font-weight: 600; transition: all 0.2s;
+  }
+  .model-pill:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .model-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Footer */
+  footer { padding: 40px 60px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; }
+  footer p { color: var(--muted); font-size: 14px; }
+
+  /* ===== AUTH MODAL ===== */
+  .modal-backdrop {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 40px; width: 100%; max-width: 420px; position: relative;
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn { from{opacity:0;transform:translateY(16px) scale(0.97)} to{opacity:1;transform:none} }
+  .modal-close { position: absolute; top: 20px; right: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; }
+  .modal-close:hover { color: var(--text); }
+  .modal-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+  .modal-logo .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .modal-logo span { font-size: 22px; font-weight: 800; }
+  .modal h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .modal p { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--muted); }
+  .form-input {
+    width: 100%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border2);
+    border-radius: 10px; color: var(--text); font-family: 'Syne', sans-serif; font-size: 15px;
+    transition: border-color 0.2s; outline: none;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--muted); }
+  .btn-full { width: 100%; justify-content: center; padding: 14px; font-size: 16px; }
+  .auth-switch { text-align: center; margin-top: 20px; font-size: 14px; color: var(--muted); }
+  .auth-switch a { color: var(--accent); cursor: pointer; text-decoration: none; }
+  .auth-switch a:hover { text-decoration: underline; }
+  .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider span { font-size: 13px; color: var(--muted); }
+  .btn-google { width: 100%; justify-content: center; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); margin-bottom: 16px; }
+  .btn-google:hover { border-color: var(--muted); }
+
+  /* ===== DASHBOARD ===== */
+  #dashboard { flex-direction: row; }
+  
+  .sidebar {
+    width: 260px; min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 50;
+  }
+  .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 800; }
+  .sidebar-logo .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .sidebar-user { padding: 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .user-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #00c4ff); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: #000; flex-shrink: 0; }
+  .user-info { flex: 1; overflow: hidden; }
+  .user-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-email { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .logout-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 6px; transition: color 0.2s; }
+  .logout-btn:hover { color: var(--red); }
+
+  .main-content { margin-left: 260px; flex: 1; min-height: 100vh; padding: 40px; }
+  .page { display: none; }
+  .page.active { display: block; }
+  
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px; }
+  .page-header h2 { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+  .page-header p { color: var(--muted); font-size: 15px; margin-top: 6px; }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .stat-label { font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .stat-label svg { width: 16px; height: 16px; }
+  .stat-value { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+  .stat-change { font-size: 13px; color: var(--accent); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+
+  /* API Keys */
+  .keys-list { display: flex; flex-direction: column; gap: 12px; }
+  .key-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; display: flex; align-items: center; gap: 20px; }
+  .key-icon { width: 42px; height: 42px; background: var(--accent-dim); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .key-icon svg { width: 20px; height: 20px; color: var(--accent); }
+  .key-info { flex: 1; }
+  .key-name { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .key-value { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted); background: var(--bg); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); display: inline-block; cursor: pointer; transition: border-color 0.2s; }
+  .key-value:hover { border-color: var(--accent); }
+  .key-meta { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .key-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .key-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+  .badge-active { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(90,255,142,0.2); }
+  .badge-revoked { background: rgba(255,90,90,0.1); color: var(--red); border: 1px solid rgba(255,90,90,0.2); }
+
+  /* Create key form */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; margin-bottom: 24px; }
+  .card h3 { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+  .inline-form { display: flex; gap: 12px; }
+  .inline-form .form-input { flex: 1; }
+
+  /* Usage chart */
+  .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; }
+  .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .chart-header h3 { font-size: 17px; font-weight: 700; }
+  .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 180px; }
+  .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .chart-bar { width: 100%; border-radius: 6px 6px 0 0; background: var(--accent-dim); border: 1px solid rgba(90,255,142,0.2); transition: all 0.3s; cursor: pointer; }
+  .chart-bar:hover { background: var(--accent); }
+  .chart-label { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* Models page */
+  .models-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .model-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; transition: all 0.2s; position: relative; overflow: hidden; }
+  .model-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), transparent); opacity: 0; transition: opacity 0.2s; }
+  .model-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .model-card:hover::before { opacity: 1; }
+  .model-provider { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
+  .model-name { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+  .model-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { padding: 4px 10px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; font-size: 12px; color: var(--muted); }
+  .tag.free { background: var(--accent-dim); border-color: rgba(90,255,142,0.2); color: var(--accent); }
+  .stealth-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+  /* Docs */
+  .docs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .doc-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; text-decoration: none; color: var(--text); transition: all 0.2s; display: block; }
+  .doc-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .doc-icon { width: 44px; height: 44px; background: var(--surface2); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .doc-icon svg { width: 22px; height: 22px; color: var(--accent); }
+  .doc-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .doc-card p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+  /* Settings */
+  .settings-section { margin-bottom: 32px; }
+  .settings-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border); }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-label { font-size: 15px; font-weight: 600; }
+  .settings-desc { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .toggle { position: relative; width: 44px; height: 24px; cursor: pointer; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border2); border-radius: 12px; transition: 0.3s; }
+  .toggle-slider:before { content: ''; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
+  .toggle input:checked + .toggle-slider { background: var(--accent); }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+  /* Notification */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: var(--surface); border: 1px solid var(--accent); border-radius: 12px;
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    font-size: 14px; font-weight: 600; color: var(--accent);
+    transform: translateY(100px); opacity: 0; transition: all 0.3s;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  /* New key modal */
+  .key-display {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--bg);
+    border: 1px solid var(--accent); border-radius: 10px; padding: 16px 20px;
+    color: var(--accent); margin: 16px 0; word-break: break-all; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .key-display:hover { background: var(--accent-dim); }
+
+  /* Responsive fixes */
+  @media (max-width: 900px) {
+    nav { padding: 16px 20px; }
+    .steps { grid-template-columns: 1fr; }
+    .steps .step-card { border-radius: 12px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .models-list { grid-template-columns: 1fr; }
+    .docs-grid { grid-template-columns: 1fr; }
+    nav .nav-links { display: none; }
+  }
+
+  /* Waitlist section on landing */
+  .waitlist-section { background: var(--surface); border-top: 1px solid var(--border); padding: 80px 60px; text-align: center; position: relative; z-index: 1; }
+  .waitlist-section h2 { font-size: 42px; font-weight: 800; letter-spacing: -2px; margin-bottom: 16px; }
+  .waitlist-section p { color: var(--muted); font-size: 16px; margin-bottom: 32px; }
+  .waitlist-form { display: flex; max-width: 420px; margin: 0 auto; gap: 12px; }
+  .waitlist-form .form-input { flex: 1; }
+
+  .empty-state { text-align: center; padding: 60px 40px; color: var(--muted); }
+  .empty-state svg { width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.3; display: block; }
+  .empty-state p { font-size: 15px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- ===== LANDING ===== -->
+<div id="landing" class="view active">
+  <div class="orb1 glow-orb"></div>
+  <div class="orb2 glow-orb"></div>
+  
+  <nav>
+    <a class="nav-logo" href="#">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg></div>
+      Bonsai
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="https://docs.trybons.ai" target="_blank">Docs</a>
+      <a href="#">Models</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-ghost" onclick="openModal('login')">Log in</button>
+      <button class="btn btn-primary" onclick="openModal('signup')">Get access →</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="badge"><span class="badge-dot"></span>Free frontier models — no credit card</div>
+    <h1>Code with <span class="accent">frontier</span><br>AI <span class="dim">for free</span></h1>
+    <p class="hero-sub">Route your AI coding requests to Claude, GPT-5, Gemini, and more — automatically, in stealth mode.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="openModal('signup')" style="padding:14px 28px;font-size:16px">Apply for free access →</button>
+      <a class="btn btn-ghost" href="https://docs.trybons.ai" target="_blank">View docs</a>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="code-title">Terminal</span>
+      </div>
+      <div class="code-body">
+        <div class="code-line"><span class="code-comment"># Install Bonsai CLI</span></div>
+        <div class="code-line"><span class="code-cmd">npm</span> <span>install -g </span><span class="code-str">@bonsai-ai/cli</span></div>
+        <br>
+        <div class="code-line"><span class="code-comment"># Authenticate</span></div>
+        <div class="code-line"><span class="code-cmd">bonsai</span> <span>login</span></div>
+        <br>
+        <div class="code-line"><span class="code-comment"># Start coding with frontier models</span></div>
+        <div class="code-line"><span class="code-cmd">bonsai</span> <span>start</span></div>
+        <br>
+        <div class="code-line"><span class="code-comment"># Assigned: </span><span class="code-key">cute-koala</span> <span class="code-comment">✓ Connected</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="how" class="steps-section">
+    <div class="section-label">How it works</div>
+    <div class="section-title">Three steps to free AI</div>
+    <div class="steps">
+      <div class="step-card">
+        <span class="step-num">01</span>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12h6M12 9v6"/></svg></div>
+        <h3>Apply for access</h3>
+        <p>Sign up and apply. Once approved, get your API key from the dashboard. No credit card required.</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">02</span>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+        <h3>Install CLI &amp; start</h3>
+        <p>Install the Bonsai CLI and run <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:13px">bonsai start</code>. Your requests are automatically routed.</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">03</span>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <h3>Code for free</h3>
+        <p>You're assigned a frontier model in stealth mode. Use Claude, GPT-5, Gemini, and more — completely free.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="models-section">
+    <div class="section-label">Available models</div>
+    <div class="section-title">Frontier models, all free</div>
+    <div class="models-grid">
+      <div class="model-pill"><span class="model-dot" style="background:#d97706"></span>Claude Sonnet 4.5</div>
+      <div class="model-pill"><span class="model-dot" style="background:#d97706"></span>Claude Opus 4</div>
+      <div class="model-pill"><span class="model-dot" style="background:#16a34a"></span>GPT-5</div>
+      <div class="model-pill"><span class="model-dot" style="background:#2563eb"></span>Gemini 2.5 Pro</div>
+      <div class="model-pill"><span class="model-dot" style="background:#7c3aed"></span>Grok 3</div>
+      <div class="model-pill"><span class="model-dot" style="background:#dc2626"></span>DeepSeek R2</div>
+      <div class="model-pill"><span class="model-dot" style="background:#0891b2"></span>Mistral Large</div>
+      <div class="model-pill"><span class="model-dot" style="background:#059669"></span>Llama 4</div>
+    </div>
+  </div>
+
+  <div class="waitlist-section">
+    <h2>Ready to start coding?</h2>
+    <p>Join thousands of developers using frontier AI models for free.</p>
+    <div class="waitlist-form">
+      <input class="form-input" type="email" placeholder="your@email.com" id="waitlistEmail">
+      <button class="btn btn-primary" onclick="handleWaitlist()">Apply →</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 Bonsai. Free frontier coding models.</p>
+    <div style="display:flex;gap:24px">
+      <a href="#" style="color:var(--muted);font-size:14px;text-decoration:none">Privacy</a>
+      <a href="#" style="color:var(--muted);font-size:14px;text-decoration:none">Terms</a>
+      <a href="https://discord.gg/96ZtenC5eF" target="_blank" style="color:var(--muted);font-size:14px;text-decoration:none">Discord</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ===== AUTH MODAL ===== -->
+<div id="authModal" class="modal-backdrop" onclick="closeModalBackdrop(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" width="18" height="18"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg></div>
+      <span>Bonsai</span>
+    </div>
+
+    <!-- Login -->
+    <div id="loginForm">
+      <h2>Welcome back</h2>
+      <p>Sign in to your Bonsai account</p>
+      <button class="btn btn-google btn-full" onclick="socialLogin('Google')">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <div class="divider"><div class="divider-line"></div><span>or</span><div class="divider-line"></div></div>
+      <div class="form-group"><label>Email</label><input class="form-input" type="email" id="loginEmail" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Password</label><input class="form-input" type="password" id="loginPass" placeholder="••••••••"></div>
+      <button class="btn btn-primary btn-full" onclick="handleLogin()">Sign in →</button>
+      <p class="auth-switch">Don't have an account? <a onclick="switchForm('signup')">Sign up</a></p>
+    </div>
+
+    <!-- Signup -->
+    <div id="signupForm" style="display:none">
+      <h2>Create account</h2>
+      <p>Apply for free access to frontier models</p>
+      <button class="btn btn-google btn-full" onclick="socialLogin('Google')">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <div class="divider"><div class="divider-line"></div><span>or</span><div class="divider-line"></div></div>
+      <div class="form-group"><label>Full name</label><input class="form-input" type="text" id="signupName" placeholder="Alex Johnson"></div>
+      <div class="form-group"><label>Email</label><input class="form-input" type="email" id="signupEmail" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Password</label><input class="form-input" type="password" id="signupPass" placeholder="••••••••" minlength="8"></div>
+      <button class="btn btn-primary btn-full" onclick="handleSignup()">Create account →</button>
+      <p class="auth-switch">Already have an account? <a onclick="switchForm('login')">Sign in</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NEW KEY MODAL ===== -->
+<div id="newKeyModal" class="modal-backdrop" onclick="closeNewKeyBackdrop(event)">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="closeNewKeyModal()">✕</button>
+    <h2 style="margin-bottom:8px">Your new API key</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:0">Copy and save this key now. You won't be able to see it again.</p>
+    <div class="key-display" id="newKeyDisplay" onclick="copyNewKey()"></div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px">⚠️ Store this key securely. It will only be shown once.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="copyNewKey()">Copy key</button>
+      <button class="btn btn-ghost" onclick="closeNewKeyModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard" class="view">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" width="16" height="16"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg></div>
+      Bonsai
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="showPage('overview')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Overview
+      </button>
+      <button class="nav-item" onclick="showPage('apikeys')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        API Keys
+      </button>
+      <button class="nav-item" onclick="showPage('usage')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Usage
+      </button>
+      <button class="nav-item" onclick="showPage('models')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        Models
+      </button>
+      <button class="nav-item" onclick="showPage('docs')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Docs
+      </button>
+      <button class="nav-item" onclick="showPage('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </button>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatarInitial">A</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarUserName">Alex</div>
+        <div class="user-email" id="sidebarUserEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a9c8c5ccd1e9ccd1c8c4d9c5cc87cac6c4">[email&#160;protected]</a></div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Sign out">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- OVERVIEW -->
+    <div id="page-overview" class="page active">
+      <div class="page-header">
+        <div>
+          <h2>Overview</h2>
+          <p>Your Bonsai dashboard</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showPage('apikeys')">+ New API Key</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Total Requests</div>
+          <div class="stat-value" id="statRequests">0</div>
+          <div class="stat-change">↑ All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>Active Keys</div>
+          <div class="stat-value" id="statKeys">0</div>
+          <div class="stat-change">→ API keys</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>Last Model</div>
+          <div class="stat-value" style="font-size:16px;margin-top:8px" id="statModel">—</div>
+          <div class="stat-change">Stealth mode</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Savings</div>
+          <div class="stat-value" id="statSavings">$0</div>
+          <div class="stat-change" style="color:var(--accent)">vs. direct API</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Quick Start</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:20px">Get up and running with Bonsai in under 5 minutes</p>
+        <div class="code-body" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:13px">
+          <div class="code-line"><span class="code-comment"># 1. Install CLI</span></div>
+          <div class="code-line"><span class="code-cmd">npm</span> <span>install -g @bonsai-ai/cli</span></div>
+          <br>
+          <div class="code-line"><span class="code-comment"># 2. Login with your API key</span></div>
+          <div class="code-line"><span class="code-cmd">bonsai</span> <span>login</span></div>
+          <br>
+          <div class="code-line"><span class="code-comment"># 3. Start a session</span></div>
+          <div class="code-line"><span class="code-cmd">bonsai</span> <span>start</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,rgba(90,255,142,0.06),rgba(0,196,255,0.04));border-color:rgba(90,255,142,0.2)">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="font-size:32px">🌱</div>
+          <div>
+            <h3 style="margin-bottom:4px">Models run in stealth mode</h3>
+            <p style="color:var(--muted);font-size:14px">You'll see fun codenames like <strong style="color:var(--accent)">cute-koala</strong> or <strong style="color:var(--accent)">angry-giraffe</strong> instead of real model names. This lets us evaluate performance without bias.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API KEYS -->
+    <div id="page-apikeys" class="page">
+      <div class="page-header">
+        <div>
+          <h2>API Keys</h2>
+          <p>Manage your API keys for accessing Bonsai</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Create new API key</h3>
+        <div class="inline-form">
+          <input class="form-input" type="text" id="newKeyName" placeholder="Key name (e.g. My Cursor key)">
+          <button class="btn btn-primary" onclick="createKey()">Generate key →</button>
+        </div>
+      </div>
+
+      <div id="keysList" class="keys-list">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          <p>No API keys yet. Create your first key above.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- USAGE -->
+    <div id="page-usage" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Usage</h2>
+          <p>Track your API requests over time</p>
+        </div>
+      </div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card">
+          <div class="stat-label">Today</div>
+          <div class="stat-value" id="usageToday">0</div>
+          <div class="stat-change">requests</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">This week</div>
+          <div class="stat-value" id="usageWeek">0</div>
+          <div class="stat-change">requests</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">This month</div>
+          <div class="stat-value" id="usageMonth">0</div>
+          <div class="stat-change">requests</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <h3>Requests (last 7 days)</h3>
+          <span style="font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace">Daily breakdown</span>
+        </div>
+        <div class="chart-bars" id="usageChart"></div>
+      </div>
+    </div>
+
+    <!-- MODELS -->
+    <div id="page-models" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Models</h2>
+          <p>Available frontier models in Bonsai</p>
+        </div>
+      </div>
+      <div class="card" style="background:var(--accent-dim);border-color:rgba(90,255,142,0.25);margin-bottom:24px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <span style="font-size:20px">🎭</span>
+          <div>
+            <strong>Stealth Mode</strong>
+            <p style="color:var(--muted);font-size:14px;margin-top:4px">Model names are hidden to evaluate performance without bias. You'll receive a fun codename. After your session, you can reveal which model you used.</p>
+          </div>
+        </div>
+      </div>
+      <div class="models-list">
+        <div class="model-card">
+          <div class="model-provider">Anthropic</div>
+          <div class="model-name">Claude Sonnet 4.5</div>
+          <div class="model-tags">
+            <span class="tag free">Free in stealth</span>
+            <span class="tag">Coding</span>
+            <span class="tag">128K ctx</span>
+          </div>
+          <div class="stealth-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Hidden in stealth</div>
+        </div>
+        <div class="model-card">
+          <div class="model-provider">Anthropic</div>
+          <div class="model-name">Claude Opus 4</div>
+          <div class="model-tags">
+            <span class="tag free">Free in stealth</span>
+            <span class="tag">Most powerful</span>
+            <span class="tag">200K ctx</span>
+          </div>
+          <div class="stealth-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Hidden in stealth</div>
+        </div>
+        <div class="model-card">
+          <div class="model-provider">OpenAI</div>
+          <div class="model-name">GPT-5</div>
+          <div class="model-tags">
+            <span class="tag free">Free in stealth</span>
+            <span class="tag">Reasoning</span>
+            <span class="tag">128K ctx</span>
+          </div>
+          <div class="stealth-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Hidden in stealth</div>
+        </div>
+        <div class="model-card">
+          <div class="model-provider">Google</div>
+          <div class="model-name">Gemini 2.5 Pro</div>
+          <div class="model-tags">
+            <span class="tag free">Free in stealth</span>
+            <span class="tag">Multimodal</span>
+            <span class="tag">1M ctx</span>
+          </div>
+          <div class="stealth-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Hidden in stealth</div>
+        </div>
+        <div class="model-card">
+          <div class="model-provider">xAI</div>
+          <div class="model-name">Grok 3</div>
+          <div class="model-tags">
+            <span class="tag free">Free in stealth</span>
+            <span class="tag">Fast</span>
+            <span class="tag">131K ctx</span>
+          </div>
+          <div class="stealth-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Hidden in stealth</div>
+        </div>
+        <div class="model-card">
+          <div class="model-provider">DeepSeek</div>
+          <div class="model-name">DeepSeek R2</div>
+          <div class="model-tags">
+            <span class="tag free">Free in stealth</span>
+            <span class="tag">Reasoning</span>
+            <span class="tag">64K ctx</span>
+          </div>
+          <div class="stealth-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Hidden in stealth</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCS -->
+    <div id="page-docs" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Documentation</h2>
+          <p>Everything you need to get started</p>
+        </div>
+      </div>
+      <div class="docs-grid">
+        <a class="doc-card" href="https://docs.trybons.ai/introduction" target="_blank">
+          <div class="doc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+          <h3>Quick Start</h3>
+          <p>Get up and running with Bonsai in under 5 minutes. Install the CLI and make your first request.</p>
+        </a>
+        <a class="doc-card" href="https://docs.trybons.ai" target="_blank">
+          <div class="doc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+          <h3>Bonsai CLI</h3>
+          <p>Learn all available CLI commands: login, start, status, and more.</p>
+        </a>
+        <a class="doc-card" href="https://docs.trybons.ai" target="_blank">
+          <div class="doc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
+          <h3>API Reference</h3>
+          <p>Use Bonsai directly via the Anthropic Messages API protocol at go.trybons.ai.</p>
+        </a>
+        <a class="doc-card" href="https://discord.gg/96ZtenC5eF" target="_blank">
+          <div class="doc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <h3>Discord Community</h3>
+          <p>Join our Discord server for support, updates, and to connect with other Bonsai users.</p>
+        </a>
+      </div>
+
+      <div class="card" style="margin-top:24px">
+        <h3>Integrate with your tools</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:20px">Bonsai works with popular AI coding tools via the Anthropic API protocol</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <span class="tag" style="padding:8px 14px;font-size:13px">Claude Code</span>
+          <span class="tag" style="padding:8px 14px;font-size:13px">Cline</span>
+          <span class="tag" style="padding:8px 14px;font-size:13px">RooCode</span>
+          <span class="tag" style="padding:8px 14px;font-size:13px">Cursor</span>
+          <span class="tag" style="padding:8px 14px;font-size:13px">OpenClaw</span>
+          <span class="tag" style="padding:8px 14px;font-size:13px">Windsurf</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Settings</h2>
+          <p>Manage your account preferences</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="settings-section">
+          <h3>Profile</h3>
+          <div class="form-group"><label>Full name</label><input class="form-input" type="text" id="settingsName" placeholder="Your name"></div>
+          <div class="form-group"><label>Email</label><input class="form-input" type="email" id="settingsEmail" placeholder="your@email.com" disabled style="opacity:0.6"></div>
+          <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save changes</button>
+        </div>
+
+        <div class="settings-section" style="margin-top:32px">
+          <h3>Preferences</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Stealth Mode</div>
+              <div class="settings-desc">Hide model names and show codenames instead</div>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Usage emails</div>
+              <div class="settings-desc">Receive weekly usage summary emails</div>
+            </div>
+            <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Anonymize prompts</div>
+              <div class="settings-desc">Strip PII from prompts before benchmarking</div>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-section" style="margin-top:32px;border-top:1px solid rgba(255,90,90,0.2);padding-top:24px">
+          <h3 style="color:var(--red);border-color:rgba(255,90,90,0.2)">Danger Zone</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Delete account</div>
+              <div class="settings-desc">Permanently delete your account and all API keys</div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Delete account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Copied!</span>
+</div>
+
+<script>
+// ===== STATE =====
+const API = ''; // same origin — server serves this file
+let state = { user: null, token: null, keys: [] };
+
+// ===== API HELPER =====
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json',
+      ...(state.token ? { 'Authorization': 'Bearer ' + state.token } : {}) },
+    ...(body ? { body: JSON.stringify(body) } : {})
+  };
+  const res = await fetch(API + path, opts);
+  const data = await res.json();
+  return { status: res.status, data };
+}
+
+// ===== AUTH =====
+function openModal(type) {
+  document.getElementById('authModal').classList.add('open');
+  switchForm(type);
+}
+function closeModal() { document.getElementById('authModal').classList.remove('open'); }
+function closeModalBackdrop(e) { if (e.target.id === 'authModal') closeModal(); }
+function switchForm(type) {
+  document.getElementById('loginForm').style.display = type === 'login' ? 'block' : 'none';
+  document.getElementById('signupForm').style.display = type === 'signup' ? 'block' : 'none';
+}
+
+function socialLogin() { showToast('Google OAuth not configured yet', true); }
+
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if (!email || !pass) { showToast('Please fill in all fields', true); return; }
+  showToast('Signing in...');
+  const { status, data } = await api('POST', '/api/auth/login', { email, password: pass });
+  if (status === 200) {
+    state.token = data.token;
+    state.user  = data.user;
+    localStorage.setItem('bns_token', data.token);
+    closeModal();
+    await loadDashboard();
+    showToast('Welcome back, ' + data.user.name.split(' ')[0] + '! 🌱');
+  } else {
+    showToast(data.error || 'Login failed', true);
+  }
+}
+
+async function handleSignup() {
+  const name  = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass  = document.getElementById('signupPass').value;
+  if (!name || !email || !pass) { showToast('Please fill in all fields', true); return; }
+  if (pass.length < 8) { showToast('Password must be at least 8 characters', true); return; }
+  showToast('Creating account...');
+  const { status, data } = await api('POST', '/api/auth/register', { name, email, password: pass });
+  if (status === 200) {
+    state.token = data.token;
+    state.user  = data.user;
+    localStorage.setItem('bns_token', data.token);
+    closeModal();
+    await loadDashboard();
+    showToast('Welcome to Bonsai, ' + name.split(' ')[0] + '! 🌱');
+  } else {
+    showToast(data.error || 'Registration failed', true);
+  }
+}
+
+async function logout() {
+  await api('POST', '/api/auth/logout');
+  state.token = null; state.user = null; state.keys = [];
+  localStorage.removeItem('bns_token');
+  document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('landing').classList.add('active');
+  document.getElementById('dashboard').style.display = '';
+}
+
+// Auto-login from saved token
+async function tryAutoLogin() {
+  const saved = localStorage.getItem('bns_token');
+  if (!saved) return;
+  state.token = saved;
+  const { status, data } = await api('GET', '/api/auth/me');
+  if (status === 200) {
+    state.user = data;
+    await loadDashboard();
+  } else {
+    localStorage.removeItem('bns_token');
+    state.token = null;
+  }
+}
+
+// ===== DASHBOARD =====
+async function loadDashboard() {
+  document.getElementById('landing').classList.remove('active');
+  document.getElementById('dashboard').classList.add('active');
+  document.getElementById('dashboard').style.display = 'flex';
+  const { name, email } = state.user;
+  document.getElementById('userAvatarInitial').textContent = name[0].toUpperCase();
+  document.getElementById('sidebarUserName').textContent = name;
+  document.getElementById('sidebarUserEmail').textContent = email;
+  document.getElementById('settingsName').value = name;
+  document.getElementById('settingsEmail').value = email;
+  await Promise.all([loadKeys(), loadUsage()]);
+  showPage('overview');
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
+  });
+}
+
+// ===== API KEYS =====
+async function loadKeys() {
+  const { status, data } = await api('GET', '/api/keys');
+  if (status === 200) { state.keys = data; renderKeys(); updateStats(); }
+}
+
+async function createKey() {
+  const name = document.getElementById('newKeyName').value.trim() || 'My API Key';
+  const { status, data } = await api('POST', '/api/keys', { name });
+  if (status === 200) {
+    document.getElementById('newKeyName').value = '';
+    showNewKey(data.key);   // show full key ONCE
+    await loadKeys();
+  } else {
+    showToast(data.error || 'Failed to create key', true);
+  }
+}
+
+async function revokeKey(id) {
+  const { status } = await api('PATCH', '/api/keys/' + id + '/revoke');
+  if (status === 200) { showToast('API key revoked'); await loadKeys(); }
+}
+
+async function deleteKey(id) {
+  const { status } = await api('DELETE', '/api/keys/' + id);
+  if (status === 200) { showToast('API key deleted'); await loadKeys(); }
+}
+
+function showNewKey(key) {
+  document.getElementById('newKeyDisplay').textContent = key;
+  document.getElementById('newKeyModal').classList.add('open');
+}
+function closeNewKeyModal() { document.getElementById('newKeyModal').classList.remove('open'); }
+function closeNewKeyBackdrop(e) { if (e.target.id === 'newKeyModal') closeNewKeyModal(); }
+function copyNewKey() { copyToClipboard(document.getElementById('newKeyDisplay').textContent); }
+
+function renderKeys() {
+  const list = document.getElementById('keysList');
+  if (!state.keys.length) {
+    list.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      <p>No API keys yet. Create your first key above.</p>
+    </div>`;
+    return;
+  }
+  list.innerHTML = state.keys.map(k => `
+    <div class="key-card">
+      <div class="key-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
+      <div class="key-info">
+        <div class="key-name">${k.name} <span class="key-badge ${k.active ? 'badge-active' : 'badge-revoked'}">${k.active ? '● Active' : '✕ Revoked'}</span></div>
+        <div class="key-value" title="Masked for security">${k.key}</div>
+        <div class="key-meta">Created ${new Date(k.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} · ${k.requests} requests</div>
+      </div>
+      <div class="key-actions">
+        ${k.active ? `<button class="btn btn-ghost btn-sm" onclick="revokeKey('${k.id}')">Revoke</button>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="deleteKey('${k.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== USAGE =====
+async function loadUsage() {
+  const { status, data } = await api('GET', '/api/usage');
+  if (status !== 200) return;
+  document.getElementById('usageToday').textContent  = data.today;
+  document.getElementById('usageWeek').textContent   = data.week;
+  document.getElementById('usageMonth').textContent  = data.month;
+  renderChart(data.days || []);
+  updateStats(data);
+}
+
+function renderChart(days) {
+  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const vals = days.length ? days.map(d => d.count) : new Array(7).fill(0);
+  const max = Math.max(...vals, 1);
+  document.getElementById('usageChart').innerHTML = vals.map((v, i) => `
+    <div class="chart-bar-wrap">
+      <div class="chart-bar" style="height:${Math.max(4,(v/max)*160)}px" title="${v} requests"></div>
+      <span class="chart-label">${labels[i] || ''}</span>
+    </div>`).join('');
+}
+
+function updateStats(usage) {
+  const u = usage || { total: 0 };
+  const activeKeys = state.keys.filter(k => k.active).length;
+  document.getElementById('statRequests').textContent = (u.total || 0).toLocaleString();
+  document.getElementById('statKeys').textContent     = activeKeys;
+  document.getElementById('statModel').textContent    = (u.total > 0) ? 'stealth' : '—';
+  document.getElementById('statSavings').textContent  = '$' + ((u.total || 0) * 0.003).toFixed(2);
+}
+
+// ===== SETTINGS =====
+async function saveSettings() {
+  const name = document.getElementById('settingsName').value.trim();
+  if (!name) return;
+  const { status, data } = await api('PATCH', '/api/auth/me', { name });
+  if (status === 200) {
+    state.user.name = data.name;
+    document.getElementById('sidebarUserName').textContent = data.name;
+    document.getElementById('userAvatarInitial').textContent = data.name[0].toUpperCase();
+    showToast('Settings saved');
+  }
+}
+
+async function confirmDelete() {
+  if (confirm('Are you sure? This will permanently delete your account and all API keys.')) {
+    await logout();
+    showToast('Account deleted');
+  }
+}
+
+// ===== WAITLIST =====
+function handleWaitlist() {
+  const email = document.getElementById('waitlistEmail').value.trim();
+  if (!email.includes('@')) { showToast('Please enter a valid email', true); return; }
+  document.getElementById('waitlistEmail').value = '';
+  openModal('signup');
+}
+
+// ===== UTILS =====
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!'));
+}
+
+let toastTimeout;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.style.borderColor = isError ? 'var(--red)' : 'var(--accent)';
+  t.style.color = isError ? 'var(--red)' : 'var(--accent)';
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeNewKeyModal(); }
+});
+
+// Boot
+tryAutoLogin();
+</script>
+</body>
+</html>
